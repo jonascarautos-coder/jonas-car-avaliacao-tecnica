@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jonas Car — Avaliação Técnica V5.4 - Final</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#171717;background:#f5f5f5}
+*{box-sizing:border-box}body{margin:0;padding:16px}.card{max-width:760px;margin:auto;background:#fff;border:1px solid #ddd;border-radius:16px;padding:18px}
+h1{font-size:21px;margin:0 0 5px}.sub{color:#666;margin:0 0 18px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+label{font-size:14px;font-weight:650;display:block}.full{grid-column:1/-1}
+input{width:100%;min-height:48px;margin-top:6px;border:1px solid #bbb;border-radius:10px;padding:10px 12px;font-size:17px}
+.hint{font-size:12px;color:#666;margin-top:5px}.error{color:#b00020}.ok{color:#16733b}
+.actions{display:flex;gap:10px;margin-top:20px}.actions button{min-height:48px;border:0;border-radius:10px;padding:0 16px;font-size:16px;font-weight:700}
+.secondary{background:#eee}.primary{background:#111;color:#fff;flex:1}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+<style id="jc-protecao-refresh">
+html, body { overscroll-behavior-y: contain; }
+</style>
+
+
+<style id="jc-home-style">
+#jcHome{max-width:760px;margin:auto}.jc-home-head{background:#111;color:#fff;border-radius:16px;padding:22px;margin-bottom:16px}.jc-home-head h1{font-size:24px;margin:0 0 5px}.jc-home-head p{margin:0;color:#ccc}.jc-home-card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:18px;margin-bottom:14px}.jc-new{width:100%;min-height:58px;border:0;border-radius:12px;background:#111;color:#fff;font-size:18px;font-weight:800}.jc-saved{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid #ddd;border-radius:12px;padding:13px;margin-top:10px}.jc-saved-main{flex:1;min-width:0}.jc-saved-title{font-weight:800}.jc-saved-sub{font-size:13px;color:#666;margin-top:3px}.jc-smallbtn{border:0;border-radius:9px;padding:10px 12px;font-weight:700}.jc-open{background:#111;color:#fff}.jc-del{background:#eee}.jc-toolbar{max-width:760px;margin:0 auto 12px;display:none}.jc-toolbar button{border:0;border-radius:10px;padding:10px 13px;font-weight:750}.jc-empty{color:#666;font-size:14px;padding:10px 0}.jc-form-hidden{display:none!important}.jc-home-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.jc-statusbtn{min-height:76px;border:1px solid #ddd;border-radius:12px;background:#fff;font-size:17px;font-weight:800;padding:12px}.jc-statusbtn span{display:block;font-size:25px;margin-bottom:4px}.jc-search{position:relative;margin:12px 0}.jc-search input{padding-left:42px;margin:0}.jc-search .glass{position:absolute;left:14px;top:12px;font-size:21px}.jc-list-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.jc-backlist{border:0;background:#eee;border-radius:9px;padding:9px 12px;font-weight:750}@media(max-width:480px){.jc-home-actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="jcHome">
+  <div class="jc-home-head"><h1>Jonas Car — Avaliação Técnica</h1><p>Ferramenta de avaliações veiculares</p></div>
+  <div class="jc-home-card"><button id="jcNova" class="jc-new" type="button">+ NOVA AVALIAÇÃO</button></div>
+  <div class="jc-home-card jc-home-actions">
+    <button id="jcVerAndamento" class="jc-statusbtn" type="button"><span>📝</span>EM ANDAMENTO</button>
+    <button id="jcVerConcluidas" class="jc-statusbtn" type="button"><span>✓</span>CONCLUÍDAS</button>
+  </div>
+  <div class="jc-home-card" id="jcPainelLista" style="display:none">
+    <div class="jc-list-head"><div><h2 id="jcListaTitulo" style="font-size:19px;margin:0 0 5px">Em andamento</h2><div id="jcListaHint" class="hint">Avaliações ainda não finalizadas.</div></div><button id="jcFecharLista" class="jc-backlist" type="button">FECHAR</button></div>
+    <div class="jc-search"><span class="glass">⌕</span><input id="jcBuscaPlaca" type="search" placeholder="Pesquisar pela placa" autocomplete="off" autocapitalize="characters"></div>
+    <div id="jcLista"></div>
+  </div>
+</div>
+<div id="jcToolbar" class="jc-toolbar"><button id="jcVoltarInicio" type="button">← Início</button></div>
+<div class="card jc-form-hidden" id="etapa1">
+<h1>Jonas Car — Avaliação Técnica</h1><p class="sub">Identificação do cliente e veículo</p>
+<div class="grid">
+<label>Cliente *<input id="cliente" autocomplete="name" placeholder="Nome do cliente" required></label>
+<label>CPF *<input id="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required><div id="cpfMsg" class="hint">Obrigatório.</div></label>
+<label>Telefone *<input id="telefone" required inputmode="numeric" maxlength="15" placeholder="(15) 99999-9999"><div class="hint">Digite somente os números.</div></label>
+<label>Placa *<input id="placa" required autocapitalize="characters" maxlength="8" placeholder="ABC-1234 ou ABC-1D23"><div id="placaMsg" class="hint">Placa antiga ou Mercosul.</div></label>
+<label>Montadora *<input id="montadora" required placeholder="Ex.: Fiat"></label>
+<label>Modelo *<input id="modelo" required placeholder="Ex.: Palio"></label>
+<label>Ano / modelo *<input id="ano" required inputmode="numeric" maxlength="9" placeholder="2010/2011"><div class="hint">Digite os 8 números; a barra entra automaticamente.</div></label>
+<label>Quilometragem *<input id="km" required inputmode="numeric" placeholder="125.430"><div class="hint">Pontos de milhar automáticos.</div></label>
+<label class="full">Chassi / VIN <span style="font-weight:400;color:#666">(opcional)</span><input id="chassi" maxlength="17" autocapitalize="characters" placeholder="17 caracteres"><div id="vinMsg" class="hint">Exatamente 17 caracteres válidos.</div></label>
+<label>Data<input id="data" type="date"></label><label>Hora<input id="hora" type="time"></label>
+<div class="full" style="margin-top:4px">
+  <div style="font-size:16px;font-weight:750;margin-bottom:10px">Fotos iniciais</div>
+  <div class="hint" style="margin-bottom:12px">Registro inicial obrigatório da avaliação.</div>
+  <div style="display:grid;gap:12px">
+    <div style="font-weight:700">Registro externo — 360° do veículo</div>
+    <div class="grid">
+      <label>Frente
+        <input id="fotoFrente" type="file" accept="image/*">
+        <img id="prevFrente" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:8px">
+      </label>
+      <label>Lateral esquerda
+        <input id="fotoEsquerda" type="file" accept="image/*">
+        <img id="prevEsquerda" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:8px">
+      </label>
+      <label>Traseira
+        <input id="fotoTraseira" type="file" accept="image/*">
+        <img id="prevTraseira" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:8px">
+      </label>
+      <label>Lateral direita
+        <input id="fotoDireita" type="file" accept="image/*">
+        <img id="prevDireita" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:8px">
+      </label>
+    </div>
+    <label>Painel — motor funcionando em marcha lenta
+      <input id="fotoPainel" type="file" accept="image/*">
+      <img id="prevPainel" style="display:none;width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-top:8px">
+      <div class="hint">Registrar quilometragem e luzes de advertência com o motor em funcionamento.</div>
+    </label>
+  </div>
+</div>
+</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+function plateRaw(v){return v.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7)}
+function plateMask(v){
+ const r=plateRaw(v); let o='';
+ for(let i=0;i<r.length;i++){const c=r[i];
+  if(i<3){if(/[A-Z]/.test(c))o+=c;else break}
+  else if(i===3){if(/\d/.test(c))o+=c;else break}
+  else if(i===4){if(/[A-Z0-9]/.test(c))o+=c;else break}
+  else{if(/\d/.test(c))o+=c;else break}
+ }
+ return o.length>3?o.slice(0,3)+'-'+o.slice(3):o;
+}
+function plateValid(v){return /^[A-Z]{3}-(?:\d{4}|\d[A-Z]\d{2})$/.test(v)}
+$('placa').addEventListener('input',e=>{e.target.value=plateMask(e.target.value);$('placaMsg').textContent=plateValid(e.target.value)?'Placa válida.':'Complete no padrão ABC-1234 ou ABC-1D23.';$('placaMsg').className='hint '+(plateValid(e.target.value)?'ok':'')});
+function phone(v){const d=v.replace(/\D/g,'').slice(0,11);if(!d)return'';if(d.length<3)return'('+d;if(d.length<=6)return`(${d.slice(0,2)}) ${d.slice(2)}`;if(d.length<=10)return`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;return`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`}
+$('telefone').addEventListener('input',e=>e.target.value=phone(e.target.value));
+$('ano').addEventListener('input',e=>{let d=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=d.length>4?d.slice(0,4)+'/'+d.slice(4):d});
+$('km').addEventListener('input',e=>{let d=e.target.value.replace(/\D/g,'').replace(/^0+(?=\d)/,'');e.target.value=d?Number(d).toLocaleString('pt-BR'):''});
+$('chassi').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'').slice(0,17);const ok=e.target.value.length===17;$('vinMsg').textContent=!e.target.value?'Opcional.':(ok?'17 caracteres preenchidos.':'Se informado, o chassi deve ter 17 caracteres.');$('vinMsg').className='hint '+(ok?'ok':'')});
+const n=new Date(),p=x=>String(x).padStart(2,'0');$('data').value=`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}`;$('hora').value=`${p(n.getHours())}:${p(n.getMinutes())}`;
+if($('salvar')) $('salvar').onclick=()=>{};
+if($('iniciar')) $('iniciar').onclick=()=>{};
+
+
+function cpfMask(v){
+  let d=v.replace(/\D/g,'').slice(0,11);
+  d=d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  return d;
+}
+function cpfValido(v){
+  const c=v.replace(/\D/g,'');
+  if(c.length!==11 || /^(\d)\1{10}$/.test(c)) return false;
+  let soma=0;
+  for(let i=0;i<9;i++) soma+=Number(c[i])*(10-i);
+  let d1=(soma*10)%11; if(d1===10)d1=0;
+  if(d1!==Number(c[9]))return false;
+  soma=0;
+  for(let i=0;i<10;i++) soma+=Number(c[i])*(11-i);
+  let d2=(soma*10)%11; if(d2===10)d2=0;
+  return d2===Number(c[10]);
+}
+$('cpf').addEventListener('input',e=>{
+  e.target.value=cpfMask(e.target.value);
+  const ok=cpfValido(e.target.value);
+  $('cpfMsg').textContent=ok?'CPF válido.':'Digite um CPF válido.';
+  $('cpfMsg').className='hint '+(ok?'ok':'');
+});
+function previewFoto(inputId,imgId){
+ const inp=$(inputId), img=$(imgId);
+ inp.addEventListener('change',()=>{
+   const f=inp.files && inp.files[0];
+   if(!f){if(inp.dataset.fotoSalva){img.src=inp.dataset.fotoSalva;img.style.display='block';}else{img.style.display='none';img.removeAttribute('src');}return;}
+   img.src=URL.createObjectURL(f); img.style.display='block';
+ });
+}
+[['fotoFrente','prevFrente'],['fotoEsquerda','prevEsquerda'],['fotoTraseira','prevTraseira'],['fotoDireita','prevDireita'],['fotoPainel','prevPainel']].forEach(x=>previewFoto(...x));
+</script>
+<div class="card jc-form-hidden" id="etapa2" style="margin-top:16px">
+  <div style="font-size:12px;font-weight:800;letter-spacing:.08em;color:#666;margin-bottom:6px">AVALIAÇÃO TÉCNICA</div>
+  <h1>Avaliação Técnica do Veículo</h1>
+  <p class="sub">Registre somente as pendências encontradas durante a avaliação.</p>
+
+  <section style="margin-top:18px">
+    <h2 style="font-size:19px;margin:0 0 6px">1. Diagnóstico / Varredura Eletrônica</h2>
+    <p class="hint">Faça a varredura com o scanner. Registre abaixo somente as anomalias encontradas.</p>
+
+    <div id="anomaliasScanner"></div>
+    <button type="button" id="addScanner" class="secondary"
+      style="min-height:46px;border:0;border-radius:10px;padding:0 14px;font-weight:700;margin-top:8px">
+      + Incluir registro
+    </button>
+  </section>
+
+  <section style="border-top:2px solid #ddd;margin-top:24px;padding-top:18px">
+    <h2 style="font-size:19px;margin:0 0 6px">2. Acessórios Elétricos e Iluminação</h2>
+    <p class="hint">Teste ar-condicionado, limpadores/lavadores, iluminação externa e acessórios elétricos internos. Registre somente o que apresentar problema.</p>
+
+    <div id="anomaliasEletricas"></div>
+    <button type="button" id="addEletrica" class="secondary"
+      style="min-height:46px;border:0;border-radius:10px;padding:0 14px;font-weight:700;margin-top:8px">
+      + Incluir registro
+    </button>
+  </section>
+
+
+  <section style="border-top:2px solid #ddd;margin-top:24px;padding-top:18px">
+    <h2 style="font-size:19px;margin:0 0 6px">3. Motor</h2>
+    <p class="hint">Registre somente as anormalidades encontradas durante a avaliação do motor e seu funcionamento.</p>
+    <div id="anomaliasMotor"></div>
+    <button type="button" id="addMotor" class="secondary" style="min-height:46px;border:0;border-radius:10px;padding:0 14px;font-weight:700;margin-top:8px">+ Incluir registro</button>
+  </section>
+
+  <section style="border-top:2px solid #ddd;margin-top:24px;padding-top:18px">
+    <h2 style="font-size:19px;margin:0 0 6px">4. Suspensão</h2>
+    <p class="hint">Registre somente as anormalidades encontradas na inspeção e nos testes de folgas da suspensão/direção.</p>
+    <div id="anomaliasSuspensao"></div>
+    <button type="button" id="addSuspensao" class="secondary" style="min-height:46px;border:0;border-radius:10px;padding:0 14px;font-weight:700;margin-top:8px">+ Incluir registro</button>
+  </section>
+
+  <section style="border-top:2px solid #ddd;margin-top:24px;padding-top:18px">
+    <h2 style="font-size:19px;margin:0 0 6px">5. Freios</h2>
+    <p class="hint">Registre somente as anormalidades encontradas no sistema de freios.</p>
+    <div id="anomaliasFreios"></div>
+    <button type="button" id="addFreios" class="secondary" style="min-height:46px;border:0;border-radius:10px;padding:0 14px;font-weight:700;margin-top:8px">+ Incluir registro</button>
+  </section>
+
+
+  <section style="border-top:2px solid #ddd;margin-top:26px;padding-top:20px">
+    <label style="margin-bottom:16px">Responsável pela avaliação *<input id="responsavel" placeholder="Nome do responsável pelo laudo" required></label><h2 style="font-size:20px;margin:0 0 6px">Conclusão do Diagnóstico</h2>
+    <p class="hint">Faça o fechamento técnico da avaliação, destacando as principais condições encontradas, pendências e recomendações.</p>
+    <textarea id="conclusaoDiagnostico"
+      placeholder="Ex.: Durante a avaliação foram identificadas as seguintes condições... Recomenda-se..."
+      style="width:100%;min-height:180px;margin-top:10px;border:1px solid #bbb;border-radius:10px;padding:12px;font-size:16px;line-height:1.45"></textarea>
+  </section>
+
+  <div class="actions">
+    
+    
+    <button class="secondary" type="button" id="salvarRascunhoFinal">SALVAR</button>
+    <button class="primary" type="button" id="proxima2">GERAR LAUDO PDF</button>
+    <button class="secondary" type="button" id="jcConcluirAvaliacao" style="flex:1;background:#e8f5e9;color:#146c2e">✓ MARCAR COMO CONCLUÍDA</button>
+    <button class="secondary" type="button" id="jcVoltarInicioFinal">← VOLTAR AO INÍCIO</button>
+  </div>
+</div>
+
+<script id="jc-protecao-refresh-script">
+(() => {
+  let inicioY = 0;
+  let bloqueando = false;
+
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length === 1) {
+      inicioY = e.touches[0].clientY;
+      bloqueando = (window.scrollY <= 0);
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!bloqueando || !e.touches || e.touches.length !== 1) return;
+    const atualY = e.touches[0].clientY;
+    if (atualY > inicioY && window.scrollY <= 0) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => {
+    bloqueando = false;
+  }, { passive: true });
+})();
+</script>
+
+</body>
+<script>
+let scannerN = 0, eletricaN = 0, motorN = 0, suspensaoN = 0, freiosN = 0;
+if(document.getElementById('testarEtapa2')) document.getElementById('testarEtapa2').onclick = () => {
+  document.getElementById('etapa1').style.display='none';
+  document.getElementById('etapa2').style.display='block';
+  window.scrollTo(0,0);
+};
+
+
+function criarAnomalia(containerId, numero, titulo) {
+  const d = document.createElement('div');
+  d.style.cssText = 'border:1px solid #ddd;border-radius:12px;padding:12px;margin:12px 0;background:#fafafa';
+  d.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <b>Registro</b>
+      <button type="button" class="remover" style="border:0;background:none;font-size:22px;line-height:1">×</button>
+    </div>
+    <label style="margin-top:9px">Descrição
+      <textarea class="descricao" placeholder="Descreva a pendência encontrada"
+        style="width:100%;min-height:90px;margin-top:6px;border:1px solid #bbb;border-radius:10px;padding:10px;font-size:16px"></textarea>
+    </label>
+    <label style="margin-top:9px">Foto
+      <input class="foto" type="file" accept="image/*">
+      <img class="preview" style="display:none;width:100%;max-height:230px;object-fit:cover;border-radius:10px;margin-top:8px">
+    </label>`;
+  d.querySelector('.remover').onclick = () => d.remove();
+  const input = d.querySelector('.foto'), img = d.querySelector('.preview');
+  input.addEventListener('change', () => {
+    const f = input.files && input.files[0];
+    if (f) { img.src = URL.createObjectURL(f); img.style.display = 'block'; }
+    else if (input.dataset.fotoSalva) { img.src=input.dataset.fotoSalva; img.style.display='block'; } else { img.style.display = 'none'; img.removeAttribute('src'); }
+  });
+  document.getElementById(containerId).appendChild(d);
+}
+
+document.getElementById('addScanner').onclick = () => {
+  scannerN++;
+  criarAnomalia('anomaliasScanner', scannerN, 'Anomalia eletrônica');
+};
+document.getElementById('addEletrica').onclick = () => {
+  eletricaN++;
+  criarAnomalia('anomaliasEletricas', eletricaN, 'Anomalia elétrica');
+};
+document.getElementById('addMotor').onclick = () => {
+  motorN++;
+  criarAnomalia('anomaliasMotor', motorN, 'Anomalia do motor');
+};
+document.getElementById('addSuspensao').onclick = () => {
+  suspensaoN++;
+  criarAnomalia('anomaliasSuspensao', suspensaoN, 'Anomalia da suspensão');
+};
+document.getElementById('addFreios').onclick = () => {
+  freiosN++;
+  criarAnomalia('anomaliasFreios', freiosN, 'Anomalia dos freios');
+};
+
+if(document.getElementById('voltar1')) document.getElementById('voltar1').onclick = () => {
+  document.getElementById('etapa2').style.display='none';
+  document.getElementById('etapa1').style.display='block';
+  window.scrollTo(0,0);
+};
+
+if(document.getElementById('salvar2')) document.getElementById('salvar2').onclick = () => {
+  const dados = {
+    scanner: [...document.querySelectorAll('#anomaliasScanner > div')].map(x => x.querySelector('.descricao').value),
+    eletrica: [...document.querySelectorAll('#anomaliasEletricas > div')].map(x => x.querySelector('.descricao').value),
+    motor: [...document.querySelectorAll('#anomaliasMotor > div')].map(x => x.querySelector('.descricao').value),
+    suspensao: [...document.querySelectorAll('#anomaliasSuspensao > div')].map(x => x.querySelector('.descricao').value),
+    freios: [...document.querySelectorAll('#anomaliasFreios > div')].map(x => x.querySelector('.descricao').value),
+    conclusao: document.getElementById('conclusaoDiagnostico').value
+  };
+  localStorage.setItem('jc-etapa2-v27', JSON.stringify(dados));
+  alert('Rascunho da Etapa 2 salvo neste aparelho.');
+};
+
+document.getElementById('proxima2').onclick = async () => {
+  const val = id => (document.getElementById(id)?.value || '').trim();
+
+  const obrigatorios = [
+    ['cliente','Nome do cliente'],['cpf','CPF'],['telefone','Telefone'],['placa','Placa'],
+    ['montadora','Montadora'],['modelo','Modelo'],['ano','Ano / modelo'],['km','Quilometragem'],
+    ['responsavel','Responsável pela avaliação']
+  ];
+  for (const [id,nome] of obrigatorios) {
+    if (!val(id)) { alert('Preencha o campo obrigatório: '+nome); document.getElementById(id).focus(); return; }
+  }
+  if(!cpfValido(val('cpf'))){ alert('Digite um CPF válido.'); $('cpf').focus(); return; }
+  if(!plateValid(val('placa'))){ alert('Complete a placa corretamente.'); $('placa').focus(); return; }
+  if(val('telefone').replace(/\D/g,'').length<10){ alert('Complete o telefone com DDD.'); $('telefone').focus(); return; }
+  if(!/^\d{4}\/\d{4}$/.test(val('ano'))){ alert('Complete ano/modelo.'); $('ano').focus(); return; }
+  if(val('chassi') && val('chassi').length!==17){ alert('Se informado, o chassi/VIN deve ter 17 caracteres.'); $('chassi').focus(); return; }
+  for (const [id,nome] of [['fotoFrente','Frente'],['fotoEsquerda','Lateral esquerda'],['fotoTraseira','Traseira'],['fotoDireita','Lateral direita'],['fotoPainel','Painel']]) {
+    if (!document.getElementById(id).files?.[0] && !document.getElementById(id).dataset.fotoSalva) { alert('Adicione a foto obrigatória: '+nome); document.getElementById(id).scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  }
+
+  // Os campos são salvos ao finalizar; as fotos entram no PDF gerado.
+
+  async function fileToDataURL(input) {
+    const f = input?.files?.[0];
+    if (!f) return input?.dataset?.fotoSalva || '';
+    return await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(f);
+    });
+  }
+
+  async function coletarAnomalias(containerId) {
+    const cards = [...document.querySelectorAll(`#${containerId} > div`)];
+    const itens = [];
+    for (const c of cards) {
+      const descricao = (c.querySelector('.descricao')?.value || '').trim();
+      const fotoInput = c.querySelector('.foto');
+      const foto = await fileToDataURL(fotoInput);
+      if (descricao || foto) itens.push({descricao, foto});
+    }
+    return itens;
+  }
+
+  const fotosIniciais = [
+    ['Frente', 'fotoFrente'],
+    ['Lateral esquerda', 'fotoEsquerda'],
+    ['Traseira', 'fotoTraseira'],
+    ['Lateral direita', 'fotoDireita'],
+    ['Painel em marcha lenta', 'fotoPainel']
+  ];
+  const fotos = [];
+  for (const [nome,id] of fotosIniciais) {
+    const data = await fileToDataURL(document.getElementById(id));
+    if (data) fotos.push({nome, data});
+  }
+
+  const secoes = [
+    ['Diagnóstico / Varredura Eletrônica', await coletarAnomalias('anomaliasScanner')],
+    ['Acessórios Elétricos e Iluminação', await coletarAnomalias('anomaliasEletricas')],
+    ['Motor', await coletarAnomalias('anomaliasMotor')],
+    ['Suspensão', await coletarAnomalias('anomaliasSuspensao')],
+    ['Freios', await coletarAnomalias('anomaliasFreios')]
+  ];
+
+  const conclusao = val('conclusaoDiagnostico');
+
+  try {
+    const arquivo = await criarPDFReal({
+      cliente:val('cliente'), cpf:val('cpf'),telefone:val('telefone'),montadora:val('montadora'),modelo:val('modelo'),
+      placa:val('placa'),ano:val('ano'),km:val('km'),chassi:val('chassi'),
+      data:val('data'),hora:val('hora'),responsavel:val('responsavel'),
+      fotos,secoes,conclusao
+    });
+    const url=URL.createObjectURL(arquivo);
+    const a=document.createElement('a');
+    a.href=url;
+    const nomeVeiculo = val('modelo').replace(/[^A-Za-z0-9À-ÿ]+/g,'_').replace(/^_+|_+$/g,'');
+    const nomePlaca = val('placa').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    const nomeData = val('data').replace(/[^0-9]/g,'-');
+    a.download=nomeVeiculo+'_'+nomePlaca+'_'+nomeData+'.pdf';
+    document.body.appendChild(a);
+    a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    window.__gerandoLaudo=true; await salvarTudo(); window.__gerandoLaudo=false;
+    alert('Laudo PDF gerado. A avaliação continua com o status atual até você marcar como concluída.');
+  } catch(e) {
+    console.error(e);
+    alert('Erro ao gerar PDF: '+e.message);
+  }
+};
+
+
+// V5.1 — fotos persistentes por avaliação (IndexedDB).
+const JC_FOTO_DB='jonasCarFotosV51', JC_FOTO_STORE='avaliacoes';
+function jcFotoDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(JC_FOTO_DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(JC_FOTO_STORE))r.result.createObjectStore(JC_FOTO_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function jcFotoSet(id,data){const db=await jcFotoDb();return new Promise((resolve,reject)=>{const tx=db.transaction(JC_FOTO_STORE,'readwrite');tx.objectStore(JC_FOTO_STORE).put(data,id);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
+async function jcFotoGet(id){const db=await jcFotoDb();return new Promise((resolve,reject)=>{const tx=db.transaction(JC_FOTO_STORE,'readonly');const r=tx.objectStore(JC_FOTO_STORE).get(id);r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
+async function jcFotoDel(id){const db=await jcFotoDb();return new Promise((resolve,reject)=>{const tx=db.transaction(JC_FOTO_STORE,'readwrite');tx.objectStore(JC_FOTO_STORE).delete(id);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
+function jcFotoData(input){const f=input?.files?.[0];if(!f)return Promise.resolve(input?.dataset?.fotoSalva||'');return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)})}
+async function jcFotosAtuais(){const iniciais={};for(const id of ['fotoFrente','fotoEsquerda','fotoTraseira','fotoDireita','fotoPainel'])iniciais[id]=await jcFotoData(document.getElementById(id));const registros={};for(const [k,cid] of Object.entries({scanner:'anomaliasScanner',eletrica:'anomaliasEletricas',motor:'anomaliasMotor',suspensao:'anomaliasSuspensao',freios:'anomaliasFreios'})){registros[k]=[];for(const card of document.querySelectorAll('#'+cid+' > div'))registros[k].push(await jcFotoData(card.querySelector('.foto')))}return {iniciais,registros}}
+function jcAplicarFoto(input,img,data){if(!input||!img||!data)return;input.dataset.fotoSalva=data;img.src=data;img.style.display='block'}
+let jcAvaliacaoId = null;
+let jcStatusAtual = 'andamento';
+const JC_INDEX='jonasCarAvaliacoesV50';
+function jcIndex(){try{return JSON.parse(localStorage.getItem(JC_INDEX)||'[]')}catch(e){return[]}}
+function jcSetIndex(v){localStorage.setItem(JC_INDEX,JSON.stringify(v))}
+function jcDadosAtuais(){
+  const dados={};
+  document.querySelectorAll('input, textarea').forEach(el=>{if(el.type!=='file'&&el.id)dados[el.id]=el.value});
+  const mapa={scanner:'anomaliasScanner',eletrica:'anomaliasEletricas',motor:'anomaliasMotor',suspensao:'anomaliasSuspensao',freios:'anomaliasFreios'};
+  dados.registros={};
+  for(const [k,id] of Object.entries(mapa))dados.registros[k]=[...document.querySelectorAll('#'+id+' > div')].map(x=>x.querySelector('.descricao')?.value||'');
+  return dados;
+}
+const salvarTudo = async () => {
+  try {
+    const dados=jcDadosAtuais();
+    const agora=new Date().toISOString();
+    if(!jcAvaliacaoId)jcAvaliacaoId='AV-'+Date.now();
+    dados.id=jcAvaliacaoId; dados.salvoEm=agora;
+    await jcFotoSet(jcAvaliacaoId, await jcFotosAtuais());
+    localStorage.setItem('jonasCarAvaliacao:'+jcAvaliacaoId,JSON.stringify(dados));
+    let idx=jcIndex().filter(x=>x.id!==jcAvaliacaoId);
+    idx.unshift({id:jcAvaliacaoId,cliente:dados.cliente||'',placa:dados.placa||'',montadora:dados.montadora||'',modelo:dados.modelo||'',data:dados.data||'',salvoEm:agora,status:jcStatusAtual||'andamento'});
+    jcSetIndex(idx.slice(0,100));
+    window.__jcAlterado=false;
+    if(!window.__gerandoLaudo)alert('Avaliação salva com sucesso, incluindo as fotos.');
+    return true;
+  } catch(e){console.error(e);alert('Não foi possível salvar esta avaliação neste aparelho.');return false}
+};
+
+document.getElementById('salvarRascunhoFinal').onclick=async()=>{await salvarTudo()};
+
+window.__jcAlterado = false;
+document.addEventListener('input', e => {
+  if (e.target.matches('input, textarea')) window.__jcAlterado = true;
+});
+document.addEventListener('change', e => {
+  if (e.target.matches('input, textarea')) window.__jcAlterado = true;
+});
+
+window.addEventListener('beforeunload', e => {
+  if (window.__jcAlterado) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// Nova avaliação sempre começa limpa.
+// O rascunho salvo NÃO é carregado automaticamente.
+// Na versão do aplicativo, ele será aberto somente quando o usuário escolher "Continuar rascunho".
+
+// Gerador PDF independente de impressoras e bibliotecas externas.
+async function criarPDFReal(d) {
+  const W=595.28,H=841.89, margem=43, direita=W-margem;
+  const encoder=new TextEncoder();
+  const partes=[]; let tamanho=0;
+  const append=x=>{const a=typeof x==='string'?encoder.encode(x):x;partes.push(a);tamanho+=a.length};
+  const objetos=[null];
+  const obj=x=>{objetos.push(x);return objetos.length-1};
+  const font=obj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  const bold=obj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  const pages=obj('');
+  const pageRefs=[];
+  let cmds=[],y=H-margem,imagens=[],pagina=0;
+  // Texto PDF em WinAnsi com escapes octais: preserva acentos e cedilha.
+  const especiais = {'€':128,'‚':130,'ƒ':131,'„':132,'…':133,'†':134,'‡':135,'ˆ':136,'‰':137,'Š':138,'‹':139,'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'˜':152,'™':153,'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159};
+  const normaliza = t => String(t || '').normalize('NFC');
+  const pdfEscape = t => {
+    let out = '';
+    const texto = normaliza(t).split(String.fromCharCode(13)).join(' ').split(String.fromCharCode(10)).join(' ');
+    for (const ch of texto) {
+      let code = Object.prototype.hasOwnProperty.call(especiais,ch) ? especiais[ch] : ch.codePointAt(0);
+      if (ch === String.fromCharCode(92) || ch === '(' || ch === ')') {
+        out += String.fromCharCode(92) + ch;
+        continue;
+      }
+      if (code >= 32 && code <= 126) { out += ch; continue; }
+      if ((code >= 128 && code <= 159) || (code >= 160 && code <= 255)) {
+        out += String.fromCharCode(92) + code.toString(8).padStart(3,'0');
+        continue;
+      }
+      out += '?';
+    }
+    return out;
+  };
+  const width = (t,size) => normaliza(t).length * size * .51;
+  function finish(){
+    if(!cmds.length)return;
+    const stream=cmds.join('\n');
+    const streamId=obj('<< /Length '+encoder.encode(stream).length+' >>\nstream\n'+stream+'\nendstream');
+    const xobjs=imagens.length?'/XObject << '+imagens.map((v,i)=>'/Im'+i+' '+v+' 0 R').join(' ')+' >>':'';
+    const pageId=obj('<< /Type /Page /Parent '+pages+' 0 R /MediaBox [0 0 '+W+' '+H+'] /Resources << /Font << /F1 '+font+' 0 R /F2 '+bold+' 0 R >> '+xobjs+' >> /Contents '+streamId+' 0 R >>');
+    pageRefs.push(pageId);
+  }
+  function next(){
+    finish(); cmds=[];imagens=[];y=H-margem;pagina++;
+    cmds.push('0.12 0.12 0.12 rg');
+    textAt('JONAS CAR',margem,y,17,true);y-=19;
+    textAt('ELETRÔNICA AUTOMOTIVA  |  DIAGNÓSTICO • REPARO • SOLUÇÃO',margem,y,8,true);y-=12;
+    cmds.push('0.75 0.1 0.1 RG 2 w '+margem+' '+(y-4)+' m '+direita+' '+(y-4)+' l S');y-=25;
+  }
+  function ensure(h){if(y-h<margem+22)next()}
+  function textAt(t,x,yy,size=10,heavy=false){
+    const txt=pdfEscape(t);
+    cmds.push('0 0 0 rg BT /'+(heavy?'F2':'F1')+' '+size+' Tf 1 0 0 1 '+x.toFixed(1)+' '+yy.toFixed(1)+' Tm ('+txt+') Tj ET');
+  }
+  function linhas(t,max,size){
+    const saida=[];
+    for(const para of String(t||'').split(/\n/)){
+      let linha='';
+      for(const palavra of para.split(/\s+/)){
+        if(!palavra)continue;
+        if(width((linha?linha+' ':'')+palavra,size)>max && linha){saida.push(linha);linha=palavra}
+        else linha+=(linha?' ':'')+palavra;
+      }
+      saida.push(linha);
+    }
+    return saida;
+  }
+  function par(t,size=10,indent=0){
+    for(const l of linhas(t,W-2*margem-indent,size)){
+      ensure(size*1.5);textAt(l,margem+indent,y,size);y-=size*1.5;
+    }
+    y-=4;
+  }
+  function titulo(t){ensure(40);y-=7;textAt(t,margem,y,13,true);y-=8;cmds.push('0.7 0.7 0.7 RG .5 w '+margem+' '+y+' m '+direita+' '+y+' l S');y-=20}
+  function campo(k,v){par(k+': '+(v||'Não informado'),10)}
+  async function addPhoto(data,legenda){
+    if(!data)return;
+    const im=new Image();im.src=data;
+    await new Promise((ok,err)=>{im.onload=ok;im.onerror=()=>err(new Error('Não foi possível processar uma foto.'))});
+    const cv=document.createElement('canvas');
+    const escala=Math.min(1,1200/Math.max(im.naturalWidth,im.naturalHeight));
+    cv.width=Math.max(1,Math.round(im.naturalWidth*escala));cv.height=Math.max(1,Math.round(im.naturalHeight*escala));
+    const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(im,0,0,cv.width,cv.height);
+    const jpeg=cv.toDataURL('image/jpeg',.75);
+    const bytes=Uint8Array.from(atob(jpeg.split(',')[1]),c=>c.charCodeAt(0));
+    const maxW=W-2*margem,maxH=285;
+    const ratio=Math.min(maxW/cv.width,maxH/cv.height);
+    const w=cv.width*ratio,h=cv.height*ratio;
+    ensure(h+36);
+    textAt(legenda,margem,y,10,true);y-=15;
+    const imageId=obj({jpeg:bytes,width:cv.width,height:cv.height});
+    const imIndex=imagens.length;imagens.push(imageId);
+    cmds.push('q '+w.toFixed(2)+' 0 0 '+h.toFixed(2)+' '+margem+' '+(y-h).toFixed(2)+' cm /Im'+imIndex+' Do Q');
+    y-=h+17;
+  }
+  next();
+  titulo('LAUDO DE AVALIAÇÃO TÉCNICA');
+  titulo('Identificação do cliente e veículo');
+  for(const [k,v] of [
+    ['Cliente',d.cliente],['CPF',d.cpf],['Telefone',d.telefone],['Montadora',d.montadora||''],['Modelo',d.modelo],
+    ['Placa',d.placa],['Ano/modelo',d.ano],['Quilometragem',d.km+' km'],
+    ...(d.chassi?[['Chassi/VIN',d.chassi]]:[]),['Data/hora',d.data+' '+d.hora]
+  ])campo(k,v);
+  titulo('Registro fotográfico inicial');
+  for(const f of d.fotos)await addPhoto(f.data,f.nome);
+  let n=0;
+  for(const [nome,itens] of d.secoes){
+    if(!itens.length)continue;
+
+    // Prepara todos os registros deste setor antes de desenhar.
+    // Assim o título do setor nunca fica sozinho no fim da página.
+    const preparados=[];
+    for(const it of itens){
+      const descLinhas=it.descricao?linhas(it.descricao,W-2*margem-20,10):[];
+      let fotoPrep=null;
+      if(it.foto){
+        const im=new Image();im.src=it.foto;
+        await new Promise((ok,err)=>{im.onload=ok;im.onerror=()=>err(new Error('Não foi possível processar uma foto.'))});
+        const cv=document.createElement('canvas');
+        const escala=Math.min(1,1200/Math.max(im.naturalWidth,im.naturalHeight));
+        cv.width=Math.max(1,Math.round(im.naturalWidth*escala));cv.height=Math.max(1,Math.round(im.naturalHeight*escala));
+        const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(im,0,0,cv.width,cv.height);
+        const jpeg=cv.toDataURL('image/jpeg',.75);
+        const bytes=Uint8Array.from(atob(jpeg.split(',')[1]),c=>c.charCodeAt(0));
+        const maxW=W-2*margem-20,maxH=285;
+        const ratio=Math.min(maxW/cv.width,maxH/cv.height);
+        fotoPrep={bytes,width:cv.width,height:cv.height,w:cv.width*ratio,h:cv.height*ratio};
+      }
+      const descH=descLinhas.length*15+(descLinhas.length?5:0);
+      const fotoH=fotoPrep?(fotoPrep.h+10):0;
+      preparados.push({descLinhas,fotoPrep,blocoH:descH+fotoH+24});
+    }
+
+    // Reserva espaço para o cabeçalho do setor + primeiro registro.
+    // Se não couber, ambos começam juntos na página seguinte.
+    const primeiroH=preparados[0]?.blocoH || 0;
+    if(y-(48+primeiroH)<margem+22) next();
+    titulo(nome);
+
+    for(const reg of preparados){
+      n++;
+      ensure(reg.blocoH);
+      const blocoTopo=y+8;
+
+      for(const l of reg.descLinhas){textAt(l,margem+10,y,10);y-=15;}
+      if(reg.descLinhas.length)y-=5;
+
+      if(reg.fotoPrep){
+        const fp=reg.fotoPrep;
+        const imageId=obj({jpeg:fp.bytes,width:fp.width,height:fp.height});
+        const imIndex=imagens.length;imagens.push(imageId);
+        cmds.push('q '+fp.w.toFixed(2)+' 0 0 '+fp.h.toFixed(2)+' '+(margem+10)+' '+(y-fp.h).toFixed(2)+' cm /Im'+imIndex+' Do Q');
+        y-=fp.h+10;
+      }
+
+      const blocoBase=y-4;
+      cmds.push('0.72 0.72 0.72 RG .7 w '+margem+' '+blocoBase.toFixed(1)+' '+(W-2*margem)+' '+(blocoTopo-blocoBase).toFixed(1)+' re S');
+      y-=14;
+    }
+  }
+  if(!n){titulo('Avaliação técnica');par('Nenhum registro foi adicionado nos campos da avaliação.')}
+  if(d.conclusao){titulo('Conclusão do Diagnóstico');par(d.conclusao)}
+  titulo('Responsável pela avaliação');par(d.responsavel,11);par('Jonas Car Eletrônica Automotiva');
+  ensure(65);y-=30;cmds.push('0 0 0 RG .7 w '+margem+' '+y+' m '+(margem+265)+' '+y+' l S');y-=16;textAt('Assinatura do responsável',margem,y,9);
+  y-=20;par('Este relatório registra as condições constatadas no veículo no momento da avaliação, conforme os testes e verificações realizados.',8);
+  finish();
+  objetos[pages]='<< /Type /Pages /Count '+pageRefs.length+' /Kids ['+pageRefs.map(i=>i+' 0 R').join(' ')+'] >>';
+  const catalog=obj('<< /Type /Catalog /Pages '+pages+' 0 R >>');
+  append('%PDF-1.4\n');
+  const offsets=[0];
+  for(let i=1;i<objetos.length;i++){
+    offsets.push(tamanho);append(i+' 0 obj\n');
+    const item=objetos[i];
+    if(typeof item==='object' && item.jpeg){
+      append('<< /Type /XObject /Subtype /Image /Width '+item.width+' /Height '+item.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+item.jpeg.length+' >>\nstream\n');
+      append(item.jpeg);append('\nendstream');
+    }else append(item);
+    append('\nendobj\n');
+  }
+  const xref=tamanho;
+  append('xref\n0 '+objetos.length+'\n0000000000 65535 f \n');
+  for(let i=1;i<objetos.length;i++)append(String(offsets[i]).padStart(10,'0')+' 00000 n \n');
+  append('trailer\n<< /Size '+objetos.length+' /Root '+catalog+' 0 R >>\nstartxref\n'+xref+'\n%%EOF');
+  return new Blob(partes,{type:'application/pdf'});
+}
+
+
+// ===== V5.2: tela inicial, andamento, concluídas e busca por placa =====
+let jcFiltroStatus='andamento';
+function jcMarcarConcluida(){
+  if(!jcAvaliacaoId)return;
+  jcStatusAtual='concluida';
+  let idx=jcIndex();
+  idx=idx.map(x=>x.id===jcAvaliacaoId?{...x,status:'concluida',concluidoEm:new Date().toISOString()}:x);
+  jcSetIndex(idx);
+}
+function jcVoltarAndamento(){
+  if(!jcAvaliacaoId)return;
+  jcStatusAtual='andamento';
+  let idx=jcIndex();
+  idx=idx.map(x=>x.id===jcAvaliacaoId?{...x,status:'andamento',concluidoEm:null}:x);
+  jcSetIndex(idx);
+}
+function jcAtualizarBotaoStatus(){
+  const b=document.getElementById('jcConcluirAvaliacao');
+  if(!b)return;
+  if(jcStatusAtual==='concluida'){
+    b.textContent='↩ VOLTAR PARA ANDAMENTO';
+    b.style.background='#e3edf7';
+    b.style.color='#315b7d';
+  }else{
+    b.textContent='✓ MARCAR COMO CONCLUÍDA';
+    b.style.background='#e8f5e9';
+    b.style.color='#146c2e';
+  }
+}
+(function(){
+ const home=document.getElementById('jcHome'), toolbar=document.getElementById('jcToolbar');
+ const etapa1=document.getElementById('etapa1'), etapa2=document.getElementById('etapa2'), lista=document.getElementById('jcLista');
+ const painel=document.getElementById('jcPainelLista'), busca=document.getElementById('jcBuscaPlaca');
+ const mapa={scanner:['anomaliasScanner','addScanner'],eletrica:['anomaliasEletricas','addEletrica'],motor:['anomaliasMotor','addMotor'],suspensao:['anomaliasSuspensao','addSuspensao'],freios:['anomaliasFreios','addFreios']};
+ function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function mostrarHome(){home.style.display='block';toolbar.style.display='none';etapa1.classList.add('jc-form-hidden');etapa2.classList.add('jc-form-hidden');painel.style.display='none';busca.value='';window.scrollTo(0,0)}
+ function mostrarForm(){home.style.display='none';toolbar.style.display='block';etapa1.classList.remove('jc-form-hidden');etapa2.classList.remove('jc-form-hidden');window.scrollTo(0,0)}
+ function agora(){const d=new Date(),p=x=>String(x).padStart(2,'0');document.getElementById('data').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;document.getElementById('hora').value=`${p(d.getHours())}:${p(d.getMinutes())}`}
+ function limpar(){
+   document.querySelectorAll('input,textarea').forEach(el=>{if(el.type==='file'){el.value='';delete el.dataset.fotoSalva}else el.value=''});
+   document.querySelectorAll('.preview,[id^="prev"]').forEach(im=>{im.style.display='none';im.removeAttribute('src')});
+   Object.values(mapa).forEach(([id])=>document.getElementById(id).innerHTML='');
+   scannerN=eletricaN=motorN=suspensaoN=freiosN=0; agora(); jcAvaliacaoId=null;jcStatusAtual='andamento';jcAtualizarBotaoStatus();window.__jcAlterado=false;
+ }
+ function abrirLista(status){jcFiltroStatus=status;document.getElementById('jcListaTitulo').textContent=status==='concluida'?'Concluídas':'Em andamento';document.getElementById('jcListaHint').textContent=status==='concluida'?'Avaliações marcadas como concluídas.':'Avaliações ainda não finalizadas.';painel.style.display='block';busca.value='';render();painel.scrollIntoView({behavior:'smooth',block:'start'})}
+ function render(){
+   const termo=busca.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+   const idx=jcIndex().filter(x=>(x.status||'andamento')===jcFiltroStatus).filter(x=>!termo||String(x.placa||'').toUpperCase().replace(/[^A-Z0-9]/g,'').includes(termo));lista.innerHTML='';
+   if(!idx.length){lista.innerHTML='<div class="jc-empty">'+(termo?'Nenhuma placa encontrada.':(jcFiltroStatus==='concluida'?'Nenhuma avaliação concluída.':'Nenhuma avaliação em andamento.'))+'</div>';return}
+   idx.forEach(x=>{const d=document.createElement('div');d.className='jc-saved';d.innerHTML=`<div class="jc-saved-main"><div class="jc-saved-title">${esc(x.modelo||'Veículo não informado')} — ${esc(x.placa||'SEM PLACA')}</div><div class="jc-saved-sub">${esc(x.cliente||'Cliente não informado')} ${x.data?' • '+esc(x.data):''}</div></div><button class="jc-smallbtn jc-open">ABRIR</button><button class="jc-smallbtn jc-del">EXCLUIR</button>`;
+     d.querySelector('.jc-open').onclick=()=>abrir(x.id); d.querySelector('.jc-del').onclick=async()=>{if(confirm('Excluir esta avaliação salva?')){localStorage.removeItem('jonasCarAvaliacao:'+x.id);try{await jcFotoDel(x.id)}catch(e){console.error(e)}jcSetIndex(jcIndex().filter(i=>i.id!==x.id));render()}};lista.appendChild(d)});
+ }
+ async function abrir(id){
+   const dados=JSON.parse(localStorage.getItem('jonasCarAvaliacao:'+id)||'null');if(!dados)return alert('Avaliação não encontrada.');
+   limpar();jcAvaliacaoId=id;const meta=jcIndex().find(x=>x.id===id);jcStatusAtual=meta?.status||'andamento';
+   Object.entries(dados).forEach(([k,v])=>{const el=document.getElementById(k);if(el&&typeof v==='string'&&el.type!=='file')el.value=v});
+   const regs=dados.registros||{};
+   for(const [k,arr] of Object.entries(regs)){const cfg=mapa[k];if(!cfg)continue;for(const desc of arr||[]){document.getElementById(cfg[1]).click();const cards=document.querySelectorAll('#'+cfg[0]+' > div');cards[cards.length-1].querySelector('.descricao').value=desc}}
+   try{
+     const fotos=await jcFotoGet(id);const prev={fotoFrente:'prevFrente',fotoEsquerda:'prevEsquerda',fotoTraseira:'prevTraseira',fotoDireita:'prevDireita',fotoPainel:'prevPainel'};
+     for(const [fid,data] of Object.entries(fotos?.iniciais||{}))jcAplicarFoto(document.getElementById(fid),document.getElementById(prev[fid]),data);
+     for(const [k,arr] of Object.entries(fotos?.registros||{})){const cfg=mapa[k];if(!cfg)continue;const cards=[...document.querySelectorAll('#'+cfg[0]+' > div')];(arr||[]).forEach((data,i)=>{const card=cards[i];if(card)jcAplicarFoto(card.querySelector('.foto'),card.querySelector('.preview'),data)})}
+   }catch(e){console.error(e);alert('A avaliação foi aberta, mas houve problema ao recuperar alguma foto.');}
+   window.__jcAlterado=false;jcAtualizarBotaoStatus();mostrarForm();
+ }
+ document.getElementById('jcNova').onclick=()=>{limpar();mostrarForm()};
+ document.getElementById('jcVerAndamento').onclick=()=>abrirLista('andamento');
+ document.getElementById('jcVerConcluidas').onclick=()=>abrirLista('concluida');
+ document.getElementById('jcFecharLista').onclick=()=>{painel.style.display='none';busca.value=''};
+ busca.addEventListener('input',render);
+ document.getElementById('jcVoltarInicio').onclick=()=>{if(window.__jcAlterado&&!confirm('Há alterações não salvas. Voltar mesmo assim?'))return;mostrarHome()};
+ document.getElementById('jcVoltarInicioFinal').onclick=()=>{if(window.__jcAlterado&&!confirm('Há alterações não salvas. Voltar mesmo assim?'))return;mostrarHome()};
+ document.getElementById('jcConcluirAvaliacao').onclick=async()=>{
+   if(jcStatusAtual==='concluida'){
+     if(!confirm('Voltar esta avaliação para EM ANDAMENTO?'))return;
+     jcVoltarAndamento();
+     alert('Avaliação voltou para EM ANDAMENTO.');
+     mostrarHome();
+     return;
+   }
+   if(!jcAvaliacaoId){const ok=await salvarTudo();if(!ok)return;}
+   else if(window.__jcAlterado){const ok=await salvarTudo();if(!ok)return;}
+   if(!confirm('Marcar esta avaliação como CONCLUÍDA?'))return;
+   jcMarcarConcluida();
+   alert('Avaliação marcada como CONCLUÍDA.');
+   mostrarHome();
+ };
+ mostrarHome();
+})();
+</script>
+</html>
