@@ -42,13 +42,13 @@ html, body { overscroll-behavior-y: contain; }
 <h1>Jonas Car — Avaliação Técnica</h1><p class="sub">Identificação do cliente e veículo</p>
 <div class="grid">
 <label>Cliente *<input id="cliente" autocomplete="name" placeholder="Nome do cliente" required></label>
-<label>CPF *<input id="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required><div id="cpfMsg" class="hint">Obrigatório.</div></label>
+<label>CPF <span style="font-weight:400;color:#666">(opcional)</span><input id="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"><div id="cpfMsg" class="hint">Opcional.</div></label>
 <label>Telefone *<input id="telefone" required inputmode="numeric" maxlength="15" placeholder="(15) 99999-9999"><div class="hint">Digite somente os números.</div></label>
 <label>Placa *<input id="placa" required autocapitalize="characters" maxlength="8" placeholder="ABC-1234 ou ABC-1D23"><div id="placaMsg" class="hint">Placa antiga ou Mercosul.</div></label>
 <label>Montadora *<input id="montadora" required placeholder="Ex.: Fiat"></label>
 <label>Modelo *<input id="modelo" required placeholder="Ex.: Palio"></label>
 <label>Ano / modelo *<input id="ano" required inputmode="numeric" maxlength="9" placeholder="2010/2011"><div class="hint">Digite os 8 números; a barra entra automaticamente.</div></label>
-<label>Quilometragem *<input id="km" required inputmode="numeric" placeholder="125.430"><div class="hint">Pontos de milhar automáticos.</div></label>
+<label>Quilometragem <span style="font-weight:400;color:#666">(opcional)</span><input id="km" inputmode="numeric" placeholder="125.430"><div class="hint">Opcional. Pontos de milhar automáticos.</div></label>
 <label class="full">Chassi / VIN <span style="font-weight:400;color:#666">(opcional)</span><input id="chassi" maxlength="17" autocapitalize="characters" placeholder="17 caracteres"><div id="vinMsg" class="hint">Exatamente 17 caracteres válidos.</div></label>
 <label>Data<input id="data" type="date"></label><label>Hora<input id="hora" type="time"></label>
 <div class="full" style="margin-top:4px">
@@ -235,6 +235,85 @@ function previewFoto(inputId,imgId){
 })();
 </script>
 
+
+
+<!-- V5.5 — proteção de memória + salvamento automático por foto -->
+<script id="jc-foto-memoria-autosave-v55">
+(() => {
+  const MAX_LADO = 1280;
+  const QUALIDADE = 0.72;
+  let salvandoFoto = false;
+
+  function blobParaDataURL(blob){
+    return new Promise((resolve,reject)=>{
+      const r=new FileReader();
+      r.onload=()=>resolve(r.result);
+      r.onerror=reject;
+      r.readAsDataURL(blob);
+    });
+  }
+
+  async function reduzirFoto(file){
+    const url=URL.createObjectURL(file);
+    try{
+      const img=new Image();
+      await new Promise((ok,err)=>{img.onload=ok;img.onerror=err;img.src=url});
+      const escala=Math.min(1, MAX_LADO/Math.max(img.naturalWidth,img.naturalHeight));
+      const cv=document.createElement('canvas');
+      cv.width=Math.max(1,Math.round(img.naturalWidth*escala));
+      cv.height=Math.max(1,Math.round(img.naturalHeight*escala));
+      const ctx=cv.getContext('2d',{alpha:false});
+      ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+      ctx.drawImage(img,0,0,cv.width,cv.height);
+      const blob=await new Promise((ok,err)=>cv.toBlob(b=>b?ok(b):err(new Error('Falha ao reduzir a foto.')),'image/jpeg',QUALIDADE));
+      return await blobParaDataURL(blob);
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  function previewDoInput(input){
+    if(input.id){
+      const mapa={fotoFrente:'prevFrente',fotoEsquerda:'prevEsquerda',fotoTraseira:'prevTraseira',fotoDireita:'prevDireita',fotoPainel:'prevPainel'};
+      if(mapa[input.id]) return document.getElementById(mapa[input.id]);
+    }
+    return input.closest('label,div')?.querySelector('img.preview') || input.parentElement?.querySelector('img');
+  }
+
+  async function salvarSilencioso(){
+    if(typeof salvarTudo!=='function' || salvandoFoto) return;
+    salvandoFoto=true;
+    const gerandoAnterior=window.__gerandoLaudo;
+    try{
+      window.__gerandoLaudo=true; // evita alerta de sucesso durante autosave
+      await salvarTudo();
+    } finally {
+      window.__gerandoLaudo=gerandoAnterior;
+      salvandoFoto=false;
+    }
+  }
+
+  document.addEventListener('change', async (e)=>{
+    const input=e.target;
+    if(!(input instanceof HTMLInputElement) || input.type!=='file' || !input.accept?.includes('image')) return;
+    const file=input.files?.[0];
+    if(!file) return;
+    try{
+      const data=await reduzirFoto(file);
+      input.dataset.fotoSalva=data;
+      const prev=previewDoInput(input);
+      if(prev){ prev.src=data; prev.style.display='block'; }
+      // Libera imediatamente o arquivo original capturado da memória do navegador.
+      input.value='';
+      window.__jcAlterado=true;
+      await salvarSilencioso();
+      window.__jcAlterado=false;
+    }catch(err){
+      console.error(err);
+      alert('A foto foi capturada, mas não foi possível fazer a proteção automática. Tente novamente.');
+    }
+  }, true);
+})();
+</script>
+
 </body>
 <script>
 let scannerN = 0, eletricaN = 0, motorN = 0, suspensaoN = 0, freiosN = 0;
@@ -315,14 +394,14 @@ document.getElementById('proxima2').onclick = async () => {
   const val = id => (document.getElementById(id)?.value || '').trim();
 
   const obrigatorios = [
-    ['cliente','Nome do cliente'],['cpf','CPF'],['telefone','Telefone'],['placa','Placa'],
-    ['montadora','Montadora'],['modelo','Modelo'],['ano','Ano / modelo'],['km','Quilometragem'],
+    ['cliente','Nome do cliente'],['telefone','Telefone'],['placa','Placa'],
+    ['montadora','Montadora'],['modelo','Modelo'],['ano','Ano / modelo'],
     ['responsavel','Responsável pela avaliação']
   ];
   for (const [id,nome] of obrigatorios) {
     if (!val(id)) { alert('Preencha o campo obrigatório: '+nome); document.getElementById(id).focus(); return; }
   }
-  if(!cpfValido(val('cpf'))){ alert('Digite um CPF válido.'); $('cpf').focus(); return; }
+  if(val('cpf') && !cpfValido(val('cpf'))){ alert('Digite um CPF válido.'); $('cpf').focus(); return; }
   if(!plateValid(val('placa'))){ alert('Complete a placa corretamente.'); $('placa').focus(); return; }
   if(val('telefone').replace(/\D/g,'').length<10){ alert('Complete o telefone com DDD.'); $('telefone').focus(); return; }
   if(!/^\d{4}\/\d{4}$/.test(val('ano'))){ alert('Complete ano/modelo.'); $('ano').focus(); return; }
@@ -502,6 +581,8 @@ async function criarPDFReal(d) {
   const width = (t,size) => normaliza(t).length * size * .51;
   function finish(){
     if(!cmds.length)return;
+    // Número da folha, somente no PDF; sem alterar a captura de fotos.
+    textAt(String(pagina), direita-width(String(pagina),9), 24, 9);
     const stream=cmds.join('\n');
     const streamId=obj('<< /Length '+encoder.encode(stream).length+' >>\nstream\n'+stream+'\nendstream');
     const xobjs=imagens.length?'/XObject << '+imagens.map((v,i)=>'/Im'+i+' '+v+' 0 R').join(' ')+' >>':'';
@@ -566,7 +647,7 @@ async function criarPDFReal(d) {
   titulo('Identificação do cliente e veículo');
   for(const [k,v] of [
     ['Cliente',d.cliente],['CPF',d.cpf],['Telefone',d.telefone],['Montadora',d.montadora||''],['Modelo',d.modelo],
-    ['Placa',d.placa],['Ano/modelo',d.ano],['Quilometragem',d.km+' km'],
+    ['Placa',d.placa],['Ano/modelo',d.ano],['Quilometragem',d.km ? d.km+' km' : ''],
     ...(d.chassi?[['Chassi/VIN',d.chassi]]:[]),['Data/hora',d.data+' '+d.hora]
   ])campo(k,v);
   titulo('Registro fotográfico inicial');
